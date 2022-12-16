@@ -22,21 +22,15 @@ func checkLibc() Libc {
 
 		ldd, err := exec.LookPath("ldd")
 		if err == nil {
-			cmd := exec.Command(ldd, "--version")
-			var errout bytes.Buffer
-			cmd.Stderr = &errout
-			err = cmd.Run()
-			if err == nil {
-				// Musl detection
-				data := bytes.ToLower(errout.Bytes())
-				if bytes.Contains(data, []byte("musl")) {
-					// High probability that we are using musl
-					return LibcMUSL
-				}
-				if bytes.Contains(data, []byte("glibc")) {
-					// High probability that we are using glibc
-					return LibcGNU
-				}
+			out, _ := exec.Command(ldd, "--version").CombinedOutput()
+			data := bytes.ToLower(out)
+			if bytes.Contains(data, []byte("musl")) {
+				// High probability that we are using musl
+				return LibcMUSL
+			}
+			if bytes.Contains(data, []byte("glibc")) {
+				// High probability that we are using glibc
+				return LibcGNU
 			}
 		}
 
